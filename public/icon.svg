@@ -1,0 +1,94 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <!-- Background Gradient -->
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0f172a"/>
+      <stop offset="100%" stop-color="#1e293b"/>
+    </linearGradient>
+    
+    <!-- Printer Body Gradient -->
+    <linearGradient id="bodyGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#3b82f6"/>
+      <stop offset="100%" stop-color="#1d4ed8"/>
+    </linearGradient>
+    
+    <!-- Accent / Paper Gradient -->
+    <linearGradient id="paperGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#ffffff"/>
+      <stop offset="100%" stop-color="#e2e8f0"/>
+    </linearGradient>
+
+    <!-- Gear Accent Gradient -->
+    <linearGradient id="accentGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#10b981"/>
+      <stop offset="100%" stop-color="#059669"/>
+    </linearGradient>
+
+    <!-- Shadow -->
+    <filter id="shadow" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="8" stdDeviation="12" flood-color="#000000" flood-opacity="0.4"/>
+    </filter>
+  </defs>
+
+  <!-- Background Base -->
+  <rect width="512" height="512" rx="108" fill="url(#bgGrad)"/>
+  
+  <!-- Outer Tech Border Ring -->
+  <rect x="16" y="16" width="480" height="480" rx="96" fill="none" stroke="#334155" stroke-width="4" stroke-opacity="0.4"/>
+
+  <!-- Main Printer Group with Shadow -->
+  <g filter="url(#shadow)">
+    <!-- Printer Base / Lower Chassis -->
+    <rect x="96" y="210" width="320" height="190" rx="28" fill="#1e293b" stroke="#475569" stroke-width="6"/>
+
+    <!-- Printer Top Cover (Industrial rugged lid) -->
+    <path d="M 124 210 L 152 130 C 156 120 166 114 178 114 L 334 114 C 346 114 356 120 360 130 L 388 210 Z" 
+          fill="url(#bodyGrad)" stroke="#60a5fa" stroke-width="5"/>
+    
+    <!-- Top Handle / Vent Ribs -->
+    <rect x="206" y="130" width="100" height="10" rx="5" fill="#1e3a8a" opacity="0.6"/>
+    <rect x="220" y="148" width="72" height="6" rx="3" fill="#1e3a8a" opacity="0.5"/>
+
+    <!-- Paper Output Feed Tray / Slot -->
+    <rect x="136" y="196" width="240" height="26" rx="8" fill="#090d16" stroke="#334155" stroke-width="4"/>
+
+    <!-- Emerging Barcode Label / Inspection Sheet -->
+    <g transform="translate(160, 206)">
+      <rect x="0" y="0" width="192" height="100" rx="6" fill="url(#paperGrad)" stroke="#cbd5e1" stroke-width="3"/>
+      <!-- Barcode Stripes -->
+      <rect x="20" y="16" width="8" height="42" fill="#0f172a"/>
+      <rect x="34" y="16" width="4" height="42" fill="#0f172a"/>
+      <rect x="44" y="16" width="12" height="42" fill="#0f172a"/>
+      <rect x="62" y="16" width="6" height="42" fill="#0f172a"/>
+      <rect x="74" y="16" width="14" height="42" fill="#0f172a"/>
+      <rect x="94" y="16" width="4" height="42" fill="#0f172a"/>
+      <rect x="104" y="16" width="10" height="42" fill="#0f172a"/>
+      <rect x="120" y="16" width="16" height="42" fill="#0f172a"/>
+      <rect x="142" y="16" width="6" height="42" fill="#0f172a"/>
+      <rect x="154" y="16" width="14" height="42" fill="#0f172a"/>
+      <!-- Text placeholder line -->
+      <rect x="20" y="66" width="90" height="6" rx="3" fill="#64748b"/>
+      <rect x="20" y="78" width="130" height="6" rx="3" fill="#94a3b8"/>
+    </g>
+
+    <!-- Front Control Panel -->
+    <rect x="124" y="324" width="264" height="54" rx="14" fill="#0f172a" stroke="#334155" stroke-width="3"/>
+    
+    <!-- Status LEDs -->
+    <circle cx="154" cy="351" r="8" fill="#10b981"/>
+    <circle cx="154" cy="351" r="14" fill="#10b981" opacity="0.3"/>
+    <circle cx="184" cy="351" r="8" fill="#3b82f6"/>
+    <circle cx="214" cy="351" r="6" fill="#64748b"/>
+
+    <!-- LCD Display Screen -->
+    <rect x="246" y="337" width="126" height="28" rx="6" fill="#1e293b" stroke="#3b82f6" stroke-width="2"/>
+    <text x="309" y="356" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-weight="900" font-size="12" fill="#60a5fa" text-anchor="middle" letter-spacing="1.5">ONLINE • PRT</text>
+  </g>
+
+  <!-- Industrial Inspection Badge (Checkmark & Wrench / Shield) in Lower Right -->
+  <g transform="translate(330, 330)" filter="url(#shadow)">
+    <circle cx="56" cy="56" r="56" fill="url(#accentGrad)" stroke="#ffffff" stroke-width="6"/>
+    <!-- Checkmark & Tech Icon -->
+    <path d="M36 58 L 48 70 L 78 40" fill="none" stroke="#ffffff" stroke-width="9" stroke-linecap="round" stroke-linejoin="round"/>
+  </g>
+</svg>

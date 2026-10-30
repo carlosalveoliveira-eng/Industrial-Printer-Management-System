@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#10243a">
+<title>Painel de Inspeção de Impressoras</title>
+<style>
+:root{
+  --navy:#10243a;--navy2:#193650;--blue:#2563eb;--blue-soft:#eaf1ff;
+  --bg:#f3f6fa;--card:#fff;--text:#172334;--muted:#66758a;--line:#e2e8f0;
+  --green:#16845b;--green-soft:#e7f7ef;--amber:#a96008;--amber-soft:#fff3dc;
+  --red:#c13d42;--red-soft:#ffebec;--radius:18px;--shadow:0 8px 24px rgba(16,36,58,.07)
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;font-size:16px;line-height:1.4}
+button,input,select,textarea{font:inherit}
+button{cursor:pointer;touch-action:manipulation}
+.topbar{background:linear-gradient(135deg,var(--navy),#20486a);color:#fff;padding:22px 18px 26px;border-radius:0 0 26px 26px}
+.topbar-inner,.app{max-width:850px;margin:0 auto}
+.brand{font-size:12px;text-transform:uppercase;letter-spacing:1.7px;opacity:.78;font-weight:800}
+.topbar h1{font-size:24px;line-height:1.15;margin:8px 0 6px}
+.topbar p{font-size:14px;color:#d9e6f2;margin:0}
+.app{padding:16px 14px 100px}
+.stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px;margin-top:-7px}
+.stat{background:var(--card);border:1px solid rgba(226,232,240,.9);border-radius:15px;padding:14px 12px;box-shadow:var(--shadow);min-width:0}
+.stat .num{font-size:25px;font-weight:850;line-height:1.1}
+.stat .label{font-size:12px;color:var(--muted);margin-top:7px}
+.stat.good .num{color:var(--green)}.stat.warn .num{color:var(--amber)}.stat.bad .num{color:var(--red)}
+.toolbar{display:flex;gap:9px;margin:18px 0 14px}
+.search{position:relative;flex:1;min-width:0}
+.search input{width:100%;height:48px;border:1px solid var(--line);border-radius:14px;background:white;padding:0 13px 0 40px;outline:none}
+.search:before{content:"⌕";position:absolute;left:14px;top:8px;font-size:26px;color:var(--muted)}
+.icon-btn{width:48px;min-width:48px;border:1px solid var(--line);background:#fff;border-radius:14px;font-size:23px}
+.section-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:22px 2px 12px}
+.section-head h2{font-size:18px;margin:0}
+.small-muted{font-size:12px;color:var(--muted)}
+.filters{display:flex;gap:8px;overflow-x:auto;padding:0 0 5px;margin-bottom:10px;scrollbar-width:none}
+.filters button{white-space:nowrap;border:1px solid var(--line);background:white;color:var(--muted);border-radius:999px;padding:9px 13px;font-size:13px;font-weight:700}
+.filters button.active{background:var(--navy);border-color:var(--navy);color:white}
+.printer-list{display:grid;gap:11px}
+.printer-card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:15px;box-shadow:0 3px 12px rgba(16,36,58,.035)}
+.card-top{display:flex;justify-content:space-between;gap:10px;align-items:flex-start}
+.printer-title{font-size:16px;font-weight:800;margin:0 0 5px;overflow-wrap:anywhere}
+.printer-meta{font-size:13px;color:var(--muted);overflow-wrap:anywhere}
+.badge{display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:800;border-radius:999px;padding:6px 9px;white-space:nowrap}
+.badge.pending{background:var(--amber-soft);color:var(--amber)}.badge.ok{background:var(--green-soft);color:var(--green)}.badge.issue{background:var(--red-soft);color:var(--red)}
+.card-bottom{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:14px;padding-top:12px;border-top:1px solid var(--line)}
+.last-check{font-size:12px;color:var(--muted)}
+.btn{border:0;border-radius:12px;padding:12px 15px;font-weight:800;display:inline-flex;justify-content:center;align-items:center;gap:7px;min-height:44px}
+.btn-primary{background:var(--blue);color:white}.btn-dark{background:var(--navy);color:white}.btn-light{background:#eef2f7;color:var(--navy)}.btn-outline{background:white;color:var(--navy);border:1px solid var(--line)}.btn-danger{background:var(--red-soft);color:var(--red)}
+.btn-block{width:100%}
+.empty{background:white;border:1px dashed #cbd5e1;border-radius:18px;padding:28px 18px;text-align:center;color:var(--muted)}
+.empty strong{display:block;color:var(--text);margin-bottom:6px}
+.bottom-nav{position:fixed;z-index:10;bottom:0;left:0;right:0;background:rgba(255,255,255,.96);backdrop-filter:blur(14px);border-top:1px solid var(--line);padding:8px 8px calc(8px + env(safe-area-inset-bottom));display:grid;grid-template-columns:repeat(3,1fr)}
+.nav-btn{border:0;background:transparent;color:var(--muted);font-size:11px;font-weight:750;padding:6px 3px;display:flex;flex-direction:column;align-items:center;gap:4px}
+.nav-btn .nav-icon{font-size:21px;line-height:1.1}.nav-btn.active{color:var(--blue)}
+.page{display:none}.page.active{display:block}
+.panel{background:white;border:1px solid var(--line);border-radius:var(--radius);padding:17px;margin:14px 0;box-shadow:var(--shadow)}
+.panel h2,.panel h3{margin:0 0 14px}
+.field{margin:0 0 14px}
+.field label{display:block;font-size:13px;font-weight:800;margin-bottom:7px}
+.field input,.field select,.field textarea{display:block;width:100%;min-height:47px;border:1px solid #d6dee8;border-radius:12px;background:white;padding:11px 12px;color:var(--text);outline:none}
+.field textarea{min-height:94px;resize:vertical}
+.field input:focus,.field select:focus,.field textarea:focus{border-color:var(--blue);box-shadow:0 0 0 3px rgba(37,99,235,.12)}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:11px}
+.choice-row{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.choice-row.two{grid-template-columns:repeat(2,1fr)}
+.choice{position:relative}
+.choice input{position:absolute;opacity:0;pointer-events:none}
+.choice span{display:flex;align-items:center;justify-content:center;text-align:center;min-height:46px;border:1px solid #d6dee8;border-radius:12px;background:#fff;padding:8px;font-size:13px;font-weight:750}
+.choice input:checked+span{border-color:var(--blue);background:var(--blue-soft);color:#1746a2;box-shadow:inset 0 0 0 1px var(--blue)}
+.form-actions{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-top:18px}
+.notice{background:#eef5ff;border:1px solid #d8e6ff;color:#244a7a;padding:12px;border-radius:12px;font-size:13px;margin:12px 0}
+.record{padding:13px 0;border-bottom:1px solid var(--line)}.record:last-child{border-bottom:0}
+.record-title{font-weight:800}.record-detail{font-size:13px;color:var(--muted);margin-top:5px;white-space:pre-wrap;overflow-wrap:anywhere}
+.toast{position:fixed;z-index:30;left:16px;right:16px;bottom:88px;background:#173b2d;color:white;border-radius:14px;padding:14px 16px;box-shadow:var(--shadow);display:none;font-weight:700;font-size:14px}
+.toast.show{display:block}
+.footer-note{font-size:12px;color:var(--muted);text-align:center;padding:15px 4px}
+@media(min-width:650px){.app{padding-left:22px;padding-right:22px}.printer-list{grid-template-columns:1fr 1fr}.topbar{padding-left:24px;padding-right:24px}.topbar h1{font-size:29px}}
+@media(max-width:360px){.stat{padding:12px 9px}.stat .num{font-size:22px}.grid2{grid-template-columns:1fr}.card-bottom{align-items:flex-start;flex-direction:column}.card-bottom .btn{width:100%}}
+</style>
+</head>
+<body>
+<header class="topbar">
+  <div class="topbar-inner">
+    <div class="brand">Suporte técnico • Ativos de impressão</div>
+    <h1>Painel de inspeção</h1>
+    <p>Controle as impressoras, registre falhas e acompanhe as inspeções pelo celular.</p>
+  </div>
+</header>
+
+<main class="app">
+  <section id="page-home" class="page active">
+    <div class="stats">
+      <div class="stat"><div class="num" id="totalCount">0</div><div class="label">Impressoras</div></div>
+      <div class="stat warn"><div class="num" id="pendingCount">0</div><div class="label">Pendentes</div></div>
+      <div class="stat bad"><div class="num" id="issueCount">0</div><div class="label">Com problema</div></div>
+    </div>
+    <div class="toolbar">
+      <div class="search"><input id="searchInput" type="search" placeholder="Buscar por setor, nome ou IP" aria-label="Buscar impressora"></div>
+      <button class="icon-btn" id="quickAdd" aria-label="Cadastrar impressora" title="Cadastrar impressora">＋</button>
+    </div>
+    <div class="section-head"><h2>Lista de impressoras</h2><span class="small-muted" id="listCount">0 itens</span></div>
+    <div class="filters" id="filters">
+      <button class="active" data-filter="all">Todas</button>
+      <button data-filter="pending">Pendentes</button>
+      <button data-filter="ok">Funcionando</button>
+      <button data-filter="issue">Com problema</button>
+    </div>
+    <div class="printer-list" id="printerList"></div>
+    <div class="footer-note">Os dados ficam salvos neste navegador/dispositivo. Exporte uma cópia regularmente.</div>
+  </section>
+
+  <section id="page-inspect" class="page">
+    <div class="section-head"><h2>Nova inspeção</h2><span class="small-muted">Checklist técnico</span></div>
+    <div class="panel">
+      <form id="inspectionForm">
+        <div class="field">
+          <label for="inspectPrinter">Impressora *</label>
+          <select id="inspectPrinter" required><option value="">Selecione uma impressora</option></select>
+        </div>
+        <div class="grid2">
+          <div class="field"><label for="inspectDate">Data da inspeção</label><input id="inspectDate" type="date" required></div>
+          <div class="field"><label for="inspectTech">Técnico (opcional)</label><input id="inspectTech" placeholder="Seu nome"></div>
+        </div>
+        <div class="field"><label>A impressora liga?</label><div class="choice-row two">
+          <label class="choice"><input type="radio" name="power" value="Sim" checked><span>✓ Sim</span></label>
+          <label class="choice"><input type="radio" name="power" value="Não"><span>✕ Não</span></label>
+        </div></div>
+        <div class="field"><label>Imprime corretamente?</label><div class="choice-row">
+          <label class="choice"><input type="radio" name="printing" value="Sim" checked><span>✓ Sim</span></label>
+          <label class="choice"><input type="radio" name="printing" value="Não"><span>✕ Não</span></label>
+          <label class="choice"><input type="radio" name="printing" value="Não testado"><span>— Não testado</span></label>
+        </div></div>
+        <div class="field"><label>Qualidade da etiqueta</label><div class="choice-row">
+          <label class="choice"><input type="radio" name="quality" value="Boa" checked><span>Boa</span></label>
+          <label class="choice"><input type="radio" name="quality" value="Regular"><span>Regular</span></label>
+          <label class="choice"><input type="radio" name="quality" value="Ruim"><span>Ruim</span></label>
+        </div></div>
+        <div class="field"><label>Estado físico</label><div class="choice-row">
+          <label class="choice"><input type="radio" name="physical" value="Bom" checked><span>Bom</span></label>
+          <label class="choice"><input type="radio" name="physical" value="Regular"><span>Regular</span></label>
+          <label class="choice"><input type="radio" name="physical" value="Ruim"><span>Ruim</span></label>
+        </div></div>
+        <div class="field">
+          <label for="problemType">Problema encontrado</label>
+          <select id="problemType">
+            <option value="Nenhum">Nenhum</option><option>Falha de impressão</option><option>Etiqueta com baixa qualidade</option><option>Erro no painel</option><option>Problema de conexão/rede</option><option>Não liga</option><option>Problema com ribbon/fita</option><option>Problema com sensor</option><option>Problema mecânico</option><option>Necessita limpeza/manutenção</option><option>Outro</option>
+          </select>
+        </div>
+        <div class="field"><label for="errorMessage">Mensagem de erro / defeito observado</label><textarea id="errorMessage" placeholder="Ex.: aviso 'Ribbon Out', pausa ao ligar, LED piscando..."></textarea></div>
+        <div class="field"><label for="actionNeeded">Ação realizada ou necessária</label><textarea id="actionNeeded" placeholder="Ex.: limpeza, calibração, teste de rede, encaminhar para manutenção..."></textarea></div>
+        <div class="grid2">
+          <div class="field"><label for="priority">Prioridade</label><select id="priority"><option>Baixa</option><option selected>Média</option><option>Alta</option><option>Crítica</option></select></div>
+          <div class="field"><label for="result">Resultado</label><select id="result"><option>Funcionando</option><option>Funcionando com ressalva</option><option>Requer manutenção</option><option>Fora de operação</option><option>Não testada</option></select></div>
+        </div>
+        <div class="field"><label for="observations">Observações adicionais</label><textarea id="observations" placeholder="Informações úteis para a próxima visita..."></textarea></div>
+        <button class="btn btn-primary btn-block" type="submit">✓ Salvar inspeção</button>
+        <button class="btn btn-light btn-block" type="button" id="cancelInspection" style="margin-top:8px">Cancelar</button>
+      </form>
+    </div>
+  </section>
+
+  <section id="page-manage" class="page">
+    <div class="section-head"><h2>Cadastro e dados</h2></div>
+    <div class="panel">
+      <h3 id="printerFormTitle">Cadastrar impressora</h3>
+      <form id="printerForm">
+        <input id="printerId" type="hidden">
+        <div class="field"><label for="pName">Nome / identificação *</label><input id="pName" required placeholder="Ex.: Zebra ZT230 - Expedição"></div>
+        <div class="grid2">
+          <div class="field"><label for="pSector">Setor *</label><input id="pSector" required placeholder="Ex.: Expedição"></div>
+          <div class="field"><label for="pModel">Modelo</label><input id="pModel" placeholder="Ex.: Zebra ZT230"></div>
+        </div>
+        <div class="grid2">
+          <div class="field"><label for="pIP">Endereço IP</label><input id="pIP" inputmode="decimal" placeholder="192.168.1.100"></div>
+          <div class="field"><label for="pSerial">Número de série</label><input id="pSerial" placeholder="Serial da impressora"></div>
+        </div>
+        <div class="field"><label for="pNotes">Observações do cadastro</label><textarea id="pNotes" placeholder="Localização física, fila de impressão etc."></textarea></div>
+        <div class="form-actions"><button class="btn btn-primary" type="submit">Salvar cadastro</button><button class="btn btn-light" type="button" id="clearPrinterForm">Limpar</button></div>
+      </form>
+    </div>
+    <div class="panel">
+      <h3>Backup e Excel</h3>
+      <p class="small-muted">Exporte as inspeções em CSV para abrir no Excel. Faça também um backup JSON para preservar os cadastros e o histórico.</p>
+      <button class="btn btn-dark btn-block" id="exportCsv">⇩ Exportar inspeções para Excel (CSV)</button>
+      <button class="btn btn-outline btn-block" id="exportJson" style="margin-top:8px">⇩ Fazer backup completo (JSON)</button>
+      <div class="field" style="margin-top:16px">
+        <label for="importFile">Importar backup JSON neste navegador</label>
+        <input id="importFile" type="file" accept=".json,application/json">
+      </div>
+      <div class="notice"><strong>Importante:</strong> esta versão salva os dados localmente no navegador do iPhone. Ela não atualiza automaticamente um arquivo Excel no computador. Para sincronização automática, será necessário hospedar o sistema e conectar a uma fonte de dados compartilhada.</div>
+      <button class="btn btn-danger btn-block" id="deleteAll">Apagar todos os dados deste navegador</button>
+    </div>
+  </section>
+
+  <section id="page-history" class="page">
+    <div class="section-head"><h2>Histórico de inspeções</h2><span class="small-muted" id="historyCount">0 registros</span></div>
+    <div class="toolbar"><div class="search"><input id="historySearch" type="search" placeholder="Buscar no histórico"></div></div>
+    <div class="panel" id="historyList"></div>
+    <button class="btn btn-primary btn-block" id="historyExport">⇩ Exportar histórico para Excel</button>
+  </section>
+</main>
+
+<nav class="bottom-nav" aria-label="Navegação principal">
+  <button class="nav-btn active" data-page="home"><span class="nav-icon">▦</span>Impressoras</button>
+  <button class="nav-btn" data-page="inspect"><span class="nav-icon">✓</span>Inspecionar</button>
+  <button class="nav-btn" data-page="manage"><span class="nav-icon">⚙</span>Cadastro / dados</button>
+</nav>
+<div id="toast" class="toast" role="status" aria-live="polite"></div>
+
+<script>
+(function(){
+  const KEY='painelInspecaoImpressoras_v1';
+  let db={printers:[],inspections:[]};
+  let currentFilter='all';
+  const $=id=>document.getElementById(id);
+  const today=()=>new Date().toLocaleDateString('en-CA');
+  const uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,7);
+  const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  function load(){try{const x=JSON.parse(localStorage.getItem(KEY)||'null');if(x&&Array.isArray(x.printers)&&Array.isArray(x.inspections))db=x;}catch(e){}}
+  function save(){localStorage.setItem(KEY,JSON.stringify(db));renderAll();}
+  function toast(msg){$('toast').textContent=msg;$('toast').classList.add('show');setTimeout(()=>$('toast').classList.remove('show'),2600);}
+  function dateBR(s){if(!s)return '—';const p=s.split('-');return p.length===3?`${p[2]}/${p[1]}/${p[0]}`:s;}
+  function latestFor(id){return db.inspections.filter(x=>x.printerId===id).sort((a,b)=>(b.createdAt||'').localeCompare(a.createdAt||''))[0];}
+  function statusFor(p){const x=latestFor(p.id);if(!x)return 'pending';if(['Requer manutenção','Fora de operação'].includes(x.result)||x.printing==='Não'||x.power==='Não'||x.quality==='Ruim')return 'issue';return 'ok';}
+  function statusText(s){return s==='pending'?'Pendente':s==='issue'?'Com problema':'Inspecionada';}
+  function renderStats(){
+    $('totalCount').textContent=db.printers.length;
+    $('pendingCount').textContent=db.printers.filter(p=>statusFor(p)==='pending').length;
+    $('issueCount').textContent=db.printers.filter(p=>statusFor(p)==='issue').length;
+  }
+  function renderPrinters(){
+    const q=$('searchInput').value.toLowerCase().trim();
+    let list=db.printers.filter(p=>[p.name,p.sector,p.ip,p.model,p.serial].join(' ').toLowerCase().includes(q));
+    if(currentFilter!=='all')list=list.filter(p=>statusFor(p)===currentFilter);
+    list.sort((a,b)=>a.sector.localeCompare(b.sector,'pt-BR')||a.name.localeCompare(b.name,'pt-BR'));
+    $('listCount').textContent=`${list.length} ${list.length===1?'item':'itens'}`;
+    if(!list.length){$('printerList').innerHTML=`<div class="empty"><strong>${db.printers.length?'Nenhuma impressora encontrada':'Comece cadastrando suas impressoras'}</strong>${db.printers.length?'Tente outro termo ou filtro.':'Use o botão ＋ ou a aba Cadastro / dados para adicionar a primeira.'}</div>`;return;}
+    $('printerList').innerHTML=list.map(p=>{
+      const s=statusFor(p),last=latestFor(p.id);
+      return `<article class="printer-card">
+        <div class="card-top"><div><h3 class="printer-title">${esc(p.name)}</h3><div class="printer-meta">${esc(p.sector)}${p.model?' • '+esc(p.model):''}</div><div class="printer-meta">${p.ip?'IP: '+esc(p.ip):'IP não informado'}${p.serial?' • Série: '+esc(p.serial):''}</div></div><span class="badge ${s}">${statusText(s)}</span></div>
+        <div class="card-bottom"><span class="last-check">${last?'Última inspeção: '+dateBR(last.date):'Ainda não inspecionada'}</span><button class="btn btn-primary" data-inspect="${p.id}">Inspecionar →</button></div>
+      </article>`;
+    }).join('');
+    $('printerList').querySelectorAll('[data-inspect]').forEach(b=>b.addEventListener('click',()=>startInspection(b.dataset.inspect)));
+  }
+  function renderSelect(){
+    const sel=$('inspectPrinter'),prev=sel.value;
+    sel.innerHTML='<option value="">Selecione uma impressora</option>'+db.printers.slice().sort((a,b)=>a.sector.localeCompare(b.sector,'pt-BR')).map(p=>`<option value="${p.id}">${esc(p.sector)} — ${esc(p.name)}</option>`).join('');
+    if(db.printers.some(p=>p.id===prev))sel.value=prev;
+  }
+  function renderHistory(){
+    const q=$('historySearch').value.toLowerCase().trim();
+    const list=db.inspections.slice().sort((a,b)=>(b.createdAt||'').localeCompare(a.createdAt||'')).filter(x=>{
+      const p=db.printers.find(p=>p.id===x.printerId)||{};
+      return [p.name,p.sector,p.ip,x.problemType,x.errorMessage,x.actionNeeded,x.result,x.priority,x.observations,x.tech].join(' ').toLowerCase().includes(q);
+    });
+    $('historyCount').textContent=`${list.length} ${list.length===1?'registro':'registros'}`;
+    $('historyList').innerHTML=list.length?list.map(x=>{
+      const p=db.printers.find(p=>p.id===x.printerId)||{name:'Impressora removida',sector:'—'};
+      const issue=x.problemType&&x.problemType!=='Nenhum'?` • ${x.problemType}`:'';
+      return `<div class="record"><div class="record-title">${esc(p.name)} <span class="small-muted">— ${dateBR(x.date)}</span></div><div class="record-detail">${esc(p.sector)} • Resultado: ${esc(x.result)} • Prioridade: ${esc(x.priority)}${esc(issue)}${x.errorMessage?'\nDefeito: '+esc(x.errorMessage):''}${x.actionNeeded?'\nAção: '+esc(x.actionNeeded):''}${x.observations?'\nObs.: '+esc(x.observations):''}</div><div style="display:flex;gap:8px;margin-top:9px"><button class="btn btn-light" data-view="${x.id}">Ver detalhes</button><button class="btn btn-outline" data-delete-inspection="${x.id}">Excluir</button></div></div>`;
+    }).join(''):'<div class="empty"><strong>Nenhuma inspeção registrada</strong>Os registros salvos aparecerão aqui.</div>';
+    $('historyList').querySelectorAll('[data-view]').forEach(b=>b.addEventListener('click',()=>viewInspection(b.dataset.view)));
+    $('historyList').querySelectorAll('[data-delete-inspection]').forEach(b=>b.addEventListener('click',()=>deleteInspection(b.dataset.deleteInspection)));
+  }
+  function renderAll(){renderStats();renderPrinters();renderSelect();renderHistory();}
+  function showPage(name){
+    document.querySelectorAll('.page').forEach(p=>p.classList.toggle('active',p.id==='page-'+name));
+    document.querySelectorAll('.nav-btn').forEach(b=>b.classList.toggle('active',b.dataset.page===name));
+    window.scrollTo({top:0,behavior:'smooth'});
+  }
+  function startInspection(id){
+    showPage('inspect');renderSelect();
+    $('inspectPrinter').value=id||'';
+    $('inspectDate').value=today();
+    $('errorMessage').value='';$('actionNeeded').value='';$('observations').value='';
+    $('problemType').value='Nenhum';$('priority').value='Média';$('result').value='Funcionando';
+  }
+  function resetPrinterForm(){
+    $('printerForm').reset();$('printerId').value='';$('printerFormTitle').textContent='Cadastrar impressora';
+  }
+  function csvCell(v){return '"'+String(v??'').replace(/"/g,'""')+'"';}
+  function exportCSV(){
+    const headers=['Data','Técnico','Setor','Nome da impressora','IP','Modelo','Número de série','Liga?','Imprime corretamente?','Qualidade da etiqueta','Estado físico','Problema encontrado','Mensagem de erro/defeito','Ação realizada ou necessária','Prioridade','Resultado','Observações'];
+    const rows=db.inspections.map(x=>{const p=db.printers.find(p=>p.id===x.printerId)||{};return [x.date,x.tech,p.sector,p.name,p.ip,p.model,p.serial,x.power,x.printing,x.quality,x.physical,x.problemType,x.errorMessage,x.actionNeeded,x.priority,x.result,x.observations];});
+    const content='\ufeff'+[headers,...rows].map(r=>r.map(csvCell).join(';')).join('\r\n');
+    download(new Blob([content],{type:'text/csv;charset=utf-8;'}),`inspecoes_impressoras_${today()}.csv`);
+    toast('Arquivo CSV preparado para abrir no Excel.');
+  }
+  function download(blob,name){
+    const url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=name;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1500);
+  }
+  function viewInspection(id){
+    const x=db.inspections.find(x=>x.id===id);if(!x)return;const p=db.printers.find(p=>p.id===x.printerId)||{};
+    alert(`INSPEÇÃO — ${p.name||'Impressora'}\nData: ${dateBR(x.date)}\nSetor: ${p.sector||'—'}\nIP: ${p.ip||'—'}\nTécnico: ${x.tech||'—'}\nLiga: ${x.power}\nImprime: ${x.printing}\nQualidade: ${x.quality}\nEstado físico: ${x.physical}\nProblema: ${x.problemType}\nErro/defeito: ${x.errorMessage||'—'}\nAção: ${x.actionNeeded||'—'}\nPrioridade: ${x.priority}\nResultado: ${x.result}\nObservações: ${x.observations||'—'}`);
+  }
+  function deleteInspection(id){if(!confirm('Excluir este registro de inspeção?'))return;db.inspections=db.inspections.filter(x=>x.id!==id);save();toast('Inspeção excluída.');}
+  document.querySelectorAll('.nav-btn').forEach(b=>b.addEventListener('click',()=>{if(b.dataset.page==='inspect'){startInspection('');return;}showPage(b.dataset.page);}));
+  $('filters').querySelectorAll('button').forEach(b=>b.addEventListener('click',()=>{currentFilter=b.dataset.filter;$('filters').querySelectorAll('button').forEach(x=>x.classList.toggle('active',x===b));renderPrinters();}));
+  $('searchInput').addEventListener('input',renderPrinters);
+  $('historySearch').addEventListener('input',renderHistory);
+  $('quickAdd').addEventListener('click',()=>{resetPrinterForm();showPage('manage');$('pName').focus();});
+  $('inspectionForm').addEventListener('submit',e=>{
+    e.preventDefault();
+    const printerId=$('inspectPrinter').value;if(!printerId){toast('Selecione uma impressora.');return;}
+    const val=name=>document.querySelector(`input[name="${name}"]:checked`)?.value||'';
+    const x={id:uid(),printerId,date:$('inspectDate').value||today(),tech:$('inspectTech').value.trim(),power:val('power'),printing:val('printing'),quality:val('quality'),physical:val('physical'),problemType:$('problemType').value,errorMessage:$('errorMessage').value.trim(),actionNeeded:$('actionNeeded').value.trim(),priority:$('priority').value,result:$('result').value,observations:$('observations').value.trim(),createdAt:new Date().toISOString()};
+    if(x.power==='Não'||x.printing==='Não'||x.quality==='Ruim'){if(x.problemType==='Nenhum')x.problemType='Falha identificada (detalhar nas observações)';if(x.result==='Funcionando')x.result='Requer manutenção';}
+    db.inspections.push(x);save();showPage('home');toast('Inspeção salva com sucesso.');$('inspectionForm').reset();$('inspectDate').value=today();
+  });
+  $('cancelInspection').addEventListener('click',()=>showPage('home'));
+  $('printerForm').addEventListener('submit',e=>{
+    e.preventDefault();const id=$('printerId').value;
+    const p={id:id||uid(),name:$('pName').value.trim(),sector:$('pSector').value.trim(),model:$('pModel').value.trim(),ip:$('pIP').value.trim(),serial:$('pSerial').value.trim(),notes:$('pNotes').value.trim()};
+    if(id){const i=db.printers.findIndex(x=>x.id===id);if(i>=0)db.printers[i]=p;}else db.printers.push(p);
+    save();resetPrinterForm();showPage('home');toast(id?'Cadastro atualizado.':'Impressora cadastrada.');
+  });
+  $('clearPrinterForm').addEventListener('click',resetPrinterForm);
+  $('exportCsv').addEventListener('click',exportCSV);$('historyExport').addEventListener('click',exportCSV);
+  $('exportJson').addEventListener('click',()=>download(new Blob([JSON.stringify(db,null,2)],{type:'application/json;charset=utf-8'}),`backup_impressoras_${today()}.json`));
+  $('importFile').addEventListener('change',async e=>{
+    const f=e.target.files[0];if(!f)return;
+    try{const data=JSON.parse(await f.text());if(!Array.isArray(data.printers)||!Array.isArray(data.inspections))throw new Error('Formato inválido');
+      if(!confirm(`Importar ${data.printers.length} impressoras e ${data.inspections.length} inspeções? Isso substituirá os dados atuais deste navegador.`))return;
+      db=data;save();toast('Backup importado com sucesso.');
+    }catch(err){alert('Não foi possível importar. Selecione um backup JSON criado por este sistema.');}
+    e.target.value='';
+  });
+  $('deleteAll').addEventListener('click',()=>{if(confirm('Tem certeza? Todos os cadastros e inspeções salvos neste navegador serão apagados. Exporte um backup antes se precisar deles.')){db={printers:[],inspections:[]};save();resetPrinterForm();toast('Dados locais apagados.');}});
+  load();$('inspectDate').value=today();renderAll();
+})();
+</script>
+</body>
+</html>

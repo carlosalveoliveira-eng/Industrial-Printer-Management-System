@@ -1,0 +1,83 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Helper functions
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function getUserData() {
+      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data;
+    }
+
+    function hasUserDoc() {
+      return exists(/databases/$(database)/documents/users/$(request.auth.uid));
+    }
+
+    function isAdmin() {
+      return isSignedIn() && (
+        request.auth.token.email == 'graalgarotoclassico@gmail.com' ||
+        request.auth.token.email == 'tiadmin@gestao-impressoras.local' ||
+        (hasUserDoc() && getUserData().role == 'admin')
+      );
+    }
+
+    function isTech() {
+      return isSignedIn() && (
+        isAdmin() ||
+        (hasUserDoc() && getUserData().role in ['admin', 'tech']) ||
+        // Fallback for primary authenticated users who haven't set up role document yet
+        request.auth.token.email == 'graalgarotoclassico@gmail.com'
+      );
+    }
+
+    // Default deny catch-all
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // Users collection: Strict RBAC - Users CANNOT escalate their own role
+    match /users/{userId} {
+      allow read: if isSignedIn();
+      // Only admins can set role to 'admin'; regular users can only create profile with 'tech' or 'viewer'
+      allow create: if isSignedIn() && (
+        isAdmin() || 
+        (request.auth.uid == userId && request.resource.data.role in ['tech', 'viewer'])
+      );
+      // Non-admins cannot alter their role field during updates
+      allow update: if isSignedIn() && (
+        isAdmin() || 
+        (request.auth.uid == userId && !request.resource.data.diff(resource.data).affectedKeys().hasAny(['role']))
+      );
+      allow delete: if isAdmin();
+    }
+
+    // Printers collection: Requires authentication to view; tech/admin to write; admin to delete
+    match /printers/{printerId} {
+      allow read: if isSignedIn();
+      allow create, update: if isTech();
+      allow delete: if isAdmin();
+    }
+
+    // Inspections collection: Requires authentication; tech/admin to register; admin to delete
+    match /inspections/{inspectionId} {
+      allow read: if isSignedIn();
+      allow create, update: if isTech();
+      allow delete: if isAdmin();
+    }
+
+    // Sectors collection: Internal factory departments; requires authentication
+    match /sectors/{sectorId} {
+      allow read: if isSignedIn();
+      allow create, update: if isTech();
+      allow delete: if isAdmin();
+    }
+
+    // System connection probe: Requires authentication
+    match /system/{docId} {
+      allow read: if isSignedIn();
+      allow write: if isAdmin();
+    }
+  }
+}

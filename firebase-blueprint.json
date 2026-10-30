@@ -1,0 +1,91 @@
+{
+  "entities": {
+    "Printer": {
+      "title": "Printer",
+      "description": "Ativo de impressão industrial ou corporativa.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string", "maxLength": 150 },
+        "sector": { "type": "string", "maxLength": 100 },
+        "model": { "type": "string", "maxLength": 100 },
+        "ip": { "type": "string", "maxLength": 50 },
+        "serial": { "type": "string", "maxLength": 100 },
+        "patrimony": { "type": "string", "maxLength": 100 },
+        "connectionType": { "type": "string", "enum": ["ethernet", "wifi", "usb", "serial", "outro"] },
+        "notes": { "type": "string", "maxLength": 1000 },
+        "active": { "type": "boolean" },
+        "createdAt": { "type": "string" },
+        "updatedAt": { "type": "string" }
+      },
+      "required": ["name", "sector"]
+    },
+    "Inspection": {
+      "title": "Inspection",
+      "description": "Laudo e checklist de manutenção técnica de impressora.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "printerId": { "type": "string" },
+        "date": { "type": "string" },
+        "tech": { "type": "string", "maxLength": 100 },
+        "userId": { "type": "string" },
+        "power": { "type": "string", "enum": ["Sim", "Não"] },
+        "printing": { "type": "string", "enum": ["Sim", "Não", "Não testado"] },
+        "quality": { "type": "string", "enum": ["Boa", "Regular", "Ruim"] },
+        "physical": { "type": "string", "enum": ["Bom", "Regular", "Ruim"] },
+        "problemType": { "type": "string", "maxLength": 100 },
+        "errorMessage": { "type": "string", "maxLength": 1000 },
+        "actionNeeded": { "type": "string", "maxLength": 1000 },
+        "priority": { "type": "string", "enum": ["Baixa", "Média", "Alta", "Crítica"] },
+        "result": { "type": "string", "enum": ["Funcionando", "Funcionando com ressalva", "Requer manutenção", "Fora de operação", "Não testada"] },
+        "observations": { "type": "string", "maxLength": 1000 },
+        "photoUrl": { "type": "string" },
+        "createdAt": { "type": "string" }
+      },
+      "required": ["printerId", "date", "power", "printing", "quality", "physical", "result"]
+    },
+    "Sector": {
+      "title": "Sector",
+      "description": "Setor fabril ou departamento da planta.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string", "maxLength": 100 },
+        "description": { "type": "string", "maxLength": 500 },
+        "active": { "type": "boolean" }
+      },
+      "required": ["name"]
+    },
+    "UserProfile": {
+      "title": "UserProfile",
+      "description": "Perfil do usuário e nível de permissão (RBAC).",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string", "maxLength": 100 },
+        "email": { "type": "string", "maxLength": 150 },
+        "role": { "type": "string", "enum": ["admin", "tech", "viewer"] }
+      },
+      "required": ["email", "role"]
+    }
+  },
+  "firestore": {
+    "/printers/{printerId}": {
+      "schema": { "$ref": "#/entities/Printer" },
+      "description": "Coleção de impressoras da planta fabril."
+    },
+    "/inspections/{inspectionId}": {
+      "schema": { "$ref": "#/entities/Inspection" },
+      "description": "Histórico centralizado de laudos e vistorias técnicas."
+    },
+    "/sectors/{sectorId}": {
+      "schema": { "$ref": "#/entities/Sector" },
+      "description": "Lista de setores padronizados da empresa."
+    },
+    "/users/{userId}": {
+      "schema": { "$ref": "#/entities/UserProfile" },
+      "description": "Perfis dos técnicos e administradores."
+    }
+  }
+}

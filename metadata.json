@@ -1,0 +1,6 @@
+{
+  "name": "Painel de Inspeção de Impressoras",
+  "description": "Sistema mobile-first de suporte técnico para gerenciar impressoras térmicas e corporativas, executar checklists de inspeção, registrar falhas e exportar relatórios para Excel.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
